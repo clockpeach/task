@@ -1,0 +1,13 @@
+# Keil MDK
+*.uvgui.*
+*.bak
+*.dep
+*.lst
+*.map
+*.o
+*.axf
+*.elf
+*.hex
+*.sct
+Debug/
+Release/
