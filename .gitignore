@@ -1,4 +1,5 @@
 # Keil MDK
+
 *.uvgui.*
 *.bak
 *.dep
@@ -9,5 +10,6 @@
 *.elf
 *.hex
 *.sct
+*.uvguix.*
 Debug/
 Release/

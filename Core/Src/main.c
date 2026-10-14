@@ -93,7 +93,7 @@ printf(" %02X",buf[i]);
 }
 printf("\r\n");
 }
-
+//#串口重定向
 void MPU6050_INIT()
 {
 vTaskDelay(pdMS_TO_TICKS(1000));
@@ -113,7 +113,7 @@ SendAddress = 0x1C;
 SendData = 0x00;
 HAL_I2C_Mem_Write(&hi2c2,0xD0,SendAddress,1,&SendData,1,0xff);
 }
-
+//#mpu6050初始化
 uint8_t tx_busy = 0;
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
@@ -123,7 +123,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     rx_data_ready = 1;  
   }
 }
-
+//#串口回调中断，并且置标志位，在对应函数中处理数据
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     if(huart == &huart1)
@@ -131,7 +131,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
         tx_busy = 0;
     }
 }
-
+//#发送空闲回调函数，置标志位，提示可以发送
 void oled(void *pvParameters)
 {   
 	OLED_Init ();
@@ -143,14 +143,15 @@ void oled(void *pvParameters)
       if (xQueueReceive(xQueue1, &data, portMAX_DELAY) == pdTRUE)
       {
 	    OLED_NewFrame();
+      
+			OLED_PrintString(1, 5, "IMU Attitude",  &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintString(1, 19, "roll",  &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintString(1, 35, "yaw",  &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintString(1, 50, "pitch",  &font16x16, OLED_COLOR_NORMAL);
 
-	    OLED_PrintString(1, 9, "roll",  &font16x16, OLED_COLOR_NORMAL);
-	    OLED_PrintString(1, 25, "yaw",  &font16x16, OLED_COLOR_NORMAL);
-	    OLED_PrintString(1, 40, "pitch",  &font16x16, OLED_COLOR_NORMAL);
-
-	    OLED_PrintFloat(48, 9,  data.roll  * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
-	    OLED_PrintFloat(48, 25, data.yaw   * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
-	    OLED_PrintFloat(48, 40, data.pitch * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintFloat(48, 19,  data.roll  * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintFloat(48, 35, data.yaw   * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
+	    OLED_PrintFloat(48, 50, data.pitch * RAD2DEG, 2, &font16x16, OLED_COLOR_NORMAL);
 
 	    OLED_ShowFrame();
 	  }
@@ -211,9 +212,7 @@ short int GYRO_ZOUT1 = ((MPU_DATA[12]<<8)|MPU_DATA[13]);GYRO_ZOUT = (double)GYRO
     pitch = alpha * (pitch + GYRO_YOUT * dt) + (1.0f - alpha) * pitch_acc;
     yaw   = yaw + GYRO_ZOUT * dt;        
 
-//        printf("roll  = %0.2f deg\r\n", roll  * RAD2DEG);
-//        printf("pitch = %0.2f deg\r\n", pitch * RAD2DEG);
-//        printf("yaw   = %0.2f deg\r\n", yaw   * RAD2DEG);
+
         attitude_angel my;
 		my.pitch = pitch;
 		my.roll = roll;
@@ -224,7 +223,7 @@ short int GYRO_ZOUT1 = ((MPU_DATA[12]<<8)|MPU_DATA[13]);GYRO_ZOUT = (double)GYRO
 vTaskDelay(pdMS_TO_TICKS(10));
 	}
 
-
+//#读mpu6050数据并且进行高位左移八位拼接,同时通过队列将包含数据的队列发送出去
 }
 /* USER CODE END 0 */
 
